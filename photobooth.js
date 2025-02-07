@@ -13,6 +13,10 @@ const shareBtn = document.getElementById('share-btn');
 const restartBtn = document.getElementById('restart-btn');
 const countdownDisplay = document.getElementById('countdown');
 const saveBtn = document.getElementById('save-btn');
+const saveWithBgBtn = document.getElementById('save-with-bg-btn');
+const layoutBtn = document.getElementById('layout-btn');
+let isGridLayout = false;
+let originalPhotos = null;
 
 // Initialize camera
 async function initCamera() {
@@ -31,12 +35,14 @@ async function initCamera() {
 // Start the photo session
 async function startPhotoSession() {
     photosTaken = 0;
-    photoCanvas.width = video.videoWidth;
-    // Add extra height for padding between photos
-    photoCanvas.height = (video.videoHeight * TOTAL_PHOTOS) + (PHOTO_PADDING * (TOTAL_PHOTOS - 1));
-    // Fill canvas with white background
+    const SIDE_PADDING = 40; // Padding for left and right sides
+    photoCanvas.width = video.videoWidth + (SIDE_PADDING * 2); // Add padding to width
+    photoCanvas.height = (video.videoHeight * TOTAL_PHOTOS) + (PHOTO_PADDING * (TOTAL_PHOTOS - 1)) + (SIDE_PADDING * 2); // Add padding to height
+    
+    // Fill entire canvas with white background
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, photoCanvas.width, photoCanvas.height);
+    
     startBtn.style.display = 'none';
     await takePhotos();
 }
@@ -67,11 +73,11 @@ async function takePhotos() {
         ctx.save();
         // Mirror the context
         ctx.scale(-1, 1);
-        // Capture photo (adjusted for mirroring)
+        // Capture photo (adjusted for mirroring and padding)
         ctx.drawImage(
             video, 
-            -video.videoWidth, 
-            photosTaken * (video.videoHeight + PHOTO_PADDING), // Add padding between photos
+            -(video.videoWidth + 40), // Account for side padding
+            photosTaken * (video.videoHeight + PHOTO_PADDING) + 40, // Account for top padding
             video.videoWidth, 
             video.videoHeight
         );
@@ -116,10 +122,19 @@ function applyVintageFilter() {
 // Show final image and controls
 function showFinalImage() {
     video.style.display = 'none';
-    finalImage.src = photoCanvas.toDataURL('image/jpeg');
+    // Store original photos before first layout update
+    if (!originalPhotos) {
+        originalPhotos = document.createElement('canvas');
+        originalPhotos.width = photoCanvas.width;
+        originalPhotos.height = photoCanvas.height;
+        originalPhotos.getContext('2d').drawImage(photoCanvas, 0, 0);
+    }
+    updateLayout();
     finalImage.style.display = 'block';
+    layoutBtn.style.display = 'block';
     shareBtn.style.display = 'block';
     saveBtn.style.display = 'block';
+    saveWithBgBtn.style.display = 'block';
     restartBtn.style.display = 'block';
 }
 
@@ -146,10 +161,65 @@ async function sharePhoto() {
     }
 }
 
-// Add this new function for saving
+// Modify the savePhoto function to handle both layouts
 function savePhoto() {
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    const photoWidth = video.videoWidth;
+    const photoHeight = video.videoHeight;
+
+    if (isGridLayout) {
+        // For 2x2 grid layout
+        tempCanvas.width = photoWidth * 2;
+        tempCanvas.height = photoHeight * 2;
+
+        // Draw photos in 2x2 grid without padding
+        for (let i = 0; i < TOTAL_PHOTOS; i++) {
+            const row = Math.floor(i / 2);
+            const col = i % 2;
+            tempCtx.drawImage(
+                originalPhotos,
+                40, // Source x
+                40 + (i * (photoHeight + PHOTO_PADDING)),
+                photoWidth,
+                photoHeight,
+                col * photoWidth,
+                row * photoHeight,
+                photoWidth,
+                photoHeight
+            );
+        }
+    } else {
+        // For vertical strip layout
+        tempCanvas.width = photoWidth;
+        tempCanvas.height = photoHeight * TOTAL_PHOTOS;
+
+        // Draw photos vertically without padding
+        for (let i = 0; i < TOTAL_PHOTOS; i++) {
+            tempCtx.drawImage(
+                originalPhotos,
+                40,
+                40 + (i * (photoHeight + PHOTO_PADDING)),
+                photoWidth,
+                photoHeight,
+                0,
+                i * photoHeight,
+                photoWidth,
+                photoHeight
+            );
+        }
+    }
+
     const link = document.createElement('a');
     link.download = 'valentine-photobooth.jpg';
+    link.href = tempCanvas.toDataURL('image/jpeg');
+    link.click();
+}
+
+// Update savePhotoWithBackground function to handle both layouts
+function savePhotoWithBackground() {
+    const link = document.createElement('a');
+    link.download = 'valentine-photobooth-with-bg.jpg';
     link.href = photoCanvas.toDataURL('image/jpeg');
     link.click();
 }
@@ -157,10 +227,14 @@ function savePhoto() {
 // Restart the photobooth
 function restart() {
     photosTaken = 0;
+    isGridLayout = false;
+    originalPhotos = null; // Reset originalPhotos
     finalImage.style.display = 'none';
     video.style.display = 'block';
+    layoutBtn.style.display = 'none';
     shareBtn.style.display = 'none';
     saveBtn.style.display = 'none';
+    saveWithBgBtn.style.display = 'none';
     restartBtn.style.display = 'none';
     startBtn.style.display = 'block';
     ctx.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
@@ -174,11 +248,68 @@ function createFlashEffect() {
     setTimeout(() => flash.remove(), 500);
 }
 
+// Add new function to handle layout switching
+function updateLayout() {
+    const SIDE_PADDING = 40;
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    const photoWidth = video.videoWidth;
+    const photoHeight = video.videoHeight;
+    
+    if (isGridLayout) {
+        // 2x2 grid layout
+        tempCanvas.width = (photoWidth * 2) + (SIDE_PADDING * 3);
+        tempCanvas.height = (photoHeight * 2) + (SIDE_PADDING * 3);
+        
+        // Fill with white background
+        tempCtx.fillStyle = 'white';
+        tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        
+        // Draw photos in 2x2 grid
+        for (let i = 0; i < TOTAL_PHOTOS; i++) {
+            const row = Math.floor(i / 2);
+            const col = i % 2;
+            tempCtx.drawImage(
+                originalPhotos,
+                SIDE_PADDING, // Source x
+                SIDE_PADDING + (i * (photoHeight + PHOTO_PADDING)), // Source y
+                photoWidth,
+                photoHeight,
+                SIDE_PADDING + (col * (photoWidth + SIDE_PADDING)), // Destination x
+                SIDE_PADDING + (row * (photoHeight + SIDE_PADDING)), // Destination y
+                photoWidth,
+                photoHeight
+            );
+        }
+    } else {
+        // Original vertical strip layout
+        tempCanvas.width = originalPhotos.width;
+        tempCanvas.height = originalPhotos.height;
+        tempCtx.fillStyle = 'white';
+        tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        tempCtx.drawImage(originalPhotos, 0, 0);
+    }
+    
+    // Update only the display image, don't modify the original canvas
+    finalImage.src = tempCanvas.toDataURL('image/jpeg');
+    photoCanvas.width = tempCanvas.width;
+    photoCanvas.height = tempCanvas.height;
+    ctx.drawImage(tempCanvas, 0, 0);
+}
+
+// Add layout toggle function
+function toggleLayout() {
+    isGridLayout = !isGridLayout;
+    updateLayout();
+}
+
 // Event listeners
 startBtn.addEventListener('click', startPhotoSession);
 shareBtn.addEventListener('click', sharePhoto);
 restartBtn.addEventListener('click', restart);
 saveBtn.addEventListener('click', savePhoto);
+saveWithBgBtn.addEventListener('click', savePhotoWithBackground);
+layoutBtn.addEventListener('click', toggleLayout);
 
 // Initialize camera when page loads
 initCamera(); 

@@ -26,12 +26,15 @@
             width: 100%;
             max-width: 500px;
             margin-bottom: 20px;
+            z-index: 999;
         }
 
         #video {
             width: 100%;
             border-radius: 10px;
             transform: scaleX(-1);
+            z-index: 999;
+
         }
 
         #countdown {
@@ -43,6 +46,8 @@
             color: white;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             display: none;
+            z-index: 999;
+
         }
 
         #final-image {
@@ -53,15 +58,19 @@
             background: white;
             padding: 20px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 999;
+
         }
 
         .button-container {
             margin-top: 20px;
             display: flex;
             gap: 10px;
+            z-index: 999;
+
         }
 
-        button {
+        /*button {
             padding: 12px 24px;
             font-size: 16px;
             border: none;
@@ -70,7 +79,7 @@
             color: #ff69b4;
             cursor: pointer;
             transition: transform 0.2s;
-        }
+        } 
 
         button:hover {
             transform: scale(1.05);
@@ -79,10 +88,12 @@
         #start-btn {
             background-color: #ff1493;
             color: white;
-        }
+        }*/
 
         canvas {
             display: none;
+            z-index: 999;
+
         }
 
         /* Add this new style for the flash effect */
@@ -104,6 +115,143 @@
             50% { opacity: 1; }
             100% { opacity: 0; }
         }
+
+        /* Update the gradient background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #ffe6e6, #ffb3d9);
+            z-index: -2;
+        }
+
+        /* Update blob styles */
+        .blob-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .blob {
+            position: absolute;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            filter: blur(40px);
+            animation: float 15s ease-in-out infinite;
+            mix-blend-mode: soft-light;
+        }
+
+        .blob:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle at center, rgba(255,182,193,0.6) 0%, rgba(255,182,193,0) 70%);
+            left: 10%;
+            top: 30%;
+            animation-delay: 0s;
+        }
+
+        .blob:nth-child(2) {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
+            right: 30%;
+            bottom: 20%;
+            animation-delay: -7s;
+        }
+
+        .blob:nth-child(3) {
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle at center, rgba(255,192,203,0.6) 0%, rgba(255,192,203,0) 70%);
+            left: 40%;
+            top: 40%;
+            animation-delay: -3s;
+        }
+
+        .blob:nth-child(4) {
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle at center, rgba(255,228,225,0.7) 0%, rgba(255,228,225,0) 70%);
+            right: 20%;
+            top: 25%;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+            33% {
+                transform: translate(30px, -20px) scale(1.1) rotate(120deg);
+            }
+            66% {
+                transform: translate(-20px, 30px) scale(0.9) rotate(240deg);
+            }
+            100% {
+                transform: translate(0, 0) scale(1) rotate(360deg);
+            }
+        }
+
+        /* Adjust existing styles for better contrast */
+        /* button {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+        } */
+
+        #final-image {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        /* From Uiverse.io by Voxybuns */ 
+button {
+  /* Variables */
+  --button_radius: 0.75em;
+  --button_color: #ffa8e8;
+  --button_outline_color: #3a0027;
+  font-size: 17px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--button_radius);
+  background: var(--button_outline_color);
+  z-index: 999;
+}
+
+.button_top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-sizing: border-box;
+  border: 2px solid var(--button_outline_color);
+  border-radius: var(--button_radius);
+  padding: 0.75em 1.5em;
+  background: var(--button_color);
+  color: var(--button_outline_color);
+  transform: translateY(-0.2em);
+  transition: transform 0.1s ease;
+}
+
+button:hover .button_top {
+  /* Pull the button upwards when hovered */
+  transform: translateY(-0.33em);
+}
+
+button:active .button_top {
+  /* Push the button downwards when pressed */
+  transform: translateY(0);
+}
+
     </style>
 </head>
 <body>
@@ -114,10 +262,30 @@
     <canvas id="photo-canvas"></canvas>
     <img id="final-image" alt="Final photo strip">
     <div class="button-container">
-        <button id="start-btn">Start Photoshoot</button>
-        <button id="share-btn" style="display: none;">Share</button>
-        <button id="save-btn" style="display: none;">Save</button>
-        <button id="restart-btn" style="display: none;">Restart</button>
+        <button id="start-btn" >
+            <span class="button_top"> <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-camera-selfie"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2" /><path d="M9.5 15a3.5 3.5 0 0 0 5 0" /><path d="M15 11l.01 0" /><path d="M9 11l.01 0" /></svg> Start Photoshoot</span>
+        </button>
+        <button id="layout-btn" style="display: none;">
+            <span class="button_top"> <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-layout"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 4m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v1a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" /><path d="M4 13m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" /><path d="M14 4m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" /></svg> Toggle Layout</span>
+        </button>
+        <button id="share-btn" style="display: none;">
+            <span class="button_top"><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-share-3"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M13 4v4c-6.575 1.028 -9.02 6.788 -10 12c-.037 .206 5.384 -5.962 10 -6v4l8 -7l-8 -7z" /></svg></span>
+        </button>
+        <button id="save-btn" style="display: none;">
+            <span class="button_top"><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-download"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 11l5 5l5 -5" /><path d="M12 4l0 12" /></svg> Save Original</span>
+        </button>
+        <button id="save-with-bg-btn" style="display: none;">
+            <span class="button_top"> <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-download"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 11l5 5l5 -5" /><path d="M12 4l0 12" /></svg>Save with Background</span>
+        </button>
+        <button id="restart-btn" style="display: none;">
+            <span class="button_top"><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-rotate"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.95 11a8 8 0 1 0 -.5 4m.5 5v-5h-5" /></svg> Restart</span>
+        </button>
+    </div>
+    <div class="blob-container">
+        <div class="blob"></div>
+        <div class="blob"></div>
+        <div class="blob"></div>
+        <div class="blob"></div>
     </div>
     <script src="photobooth.js"></script>
 </body>
