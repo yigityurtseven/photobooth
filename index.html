@@ -68,7 +68,11 @@
             flex-wrap: wrap;
             gap: 10px;
             z-index: 999;
-
+        }
+        @media screen and (max-width: 768px) {
+            .button-container {
+                flex-direction: column;
+            }
         }
 
         /*button {
